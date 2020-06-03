@@ -1,6 +1,6 @@
 #input data store and skims
-input_store: mtc_asim.h5
-skims_file: skims.omx
+input_store: synth_plus_se.h5
+skims_file: skims_wfrc.omx
 
 #number of households to simulate
 households_sample_size:  100
@@ -25,7 +25,7 @@ use_shadow_pricing: False
 #trace household id; comment out or leave empty for no trace
 # households with all tour types
 #  [ 728370 1234067 1402924 1594625 1595333 1747572 1896849 1931818 2222690 2344951 2677154]
-trace_hh_id: 701664
+#trace_hh_id: 701664
 
 # trace origin, destination in accessibility calculation; comment out or leave empty for no trace
 #trace_od: [5, 11]

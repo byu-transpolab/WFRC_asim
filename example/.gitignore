@@ -1,0 +1,6 @@
+output/*
+.Rproj.user
+.Rhistory
+builder_cache/*
+builder_files/*
+data/*
