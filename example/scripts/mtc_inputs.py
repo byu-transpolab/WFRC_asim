@@ -23,11 +23,11 @@ col_map = {
     "PERID": "per_num"
 }
 
-source_data_dir = "C:/projects/ActivitySim/activitysim-master/activitysim-master/WFRC/data"
-store_path = "C:/projects/ActivitySim/activitysim-master/activitysim-master/WFRC/data/syth_plus_se.h5"
+source_data_dir = "C:/projects/ActivitySim/activitysim-master/activitysim-master/WFRC/example/data"
+store_path = "C:/projects/ActivitySim/activitysim-master/activitysim-master/WFRC/example/data/synth_plus_se.h5"
 
 input_files = {
-    "land_use_taz": {'filename': "SE_Data.csv", 'index_col': 'ZONE'},
+    "land_use_taz": {'filename': "land_use_taz.csv", 'index_col': 'ZONE'},
     "households": {'filename': "synthetic_households.csv", 'index_col': 'household_id'},
     "persons": {'filename': "synthetic_persons.csv", 'index_col': 'perid'}
     }

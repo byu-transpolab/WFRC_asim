@@ -1,5 +1,20 @@
 #input data store and skims
-input_store: synth_plus_se.h5
+input_table_list:
+  - tablename: households
+    filename: synthetic_households.csv
+    index_col: household_id
+    column_map:
+      HHID: household_id
+  - tablename: persons
+    filename: symthetic_persons2.csv
+    index_col: perid
+    column_map:
+      PERID: perid
+  - tablename: land_use
+    filename: land_use_taz.csv
+    index_col: TAZ
+    column_map:
+      ZONE: TAZ
 skims_file: skims_wfrc.omx
 
 #number of households to simulate
@@ -70,6 +85,7 @@ models:
 #resume_after: trip_mode_choice
 
 output_tables:
+  h5_store: True
   action: include
   prefix: final_
   tables:

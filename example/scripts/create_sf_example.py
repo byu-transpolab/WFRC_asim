@@ -17,16 +17,16 @@ if sys.version_info[0] < 3:
 
 
 # input files, SF county is zones 1 to 190, output files
-source_store = "/Users/jeff.doyle/work/activitysim-data/mtc_tm1/data/mtc_asim.h5"
-source_skims = '/Users/jeff.doyle/work/activitysim-data/mtc_tm1/data/skims.omx'
+source_store = "C:/projects/ActivitySim/activitysim-master/activitysim-master/WFRC/example/data/synth_plus_se.h5"
+source_skims = 'C:/projects/ActivitySim/activitysim-master/activitysim-master/WFRC/example/data/skims_wfrc.omx'
 
-dest_data_dir = "/Users/jeff.doyle/work/activitysim-data"
+dest_data_dir = "C:/projects/ActivitySim/activitysim-master/activitysim-master/WFRC/example/data/subset"
 
 
 def create_subset(dest_store, dest_skims, maxZone, households_sample_size=0):
 
-    dest_store_path = os.path.join(dest_data_dir, dest_store)
-    dest_skims_path = os.path.join(dest_data_dir, dest_skims)
+    dest_store_path = "C:/projects/ActivitySim/activitysim-master/activitysim-master/WFRC/example/data/subset/smallse.h5"
+    dest_skims_path = "C:/projects/ActivitySim/activitysim-master/activitysim-master/WFRC/example/data/subset/smallskims.omx"
 
     print('land_use_taz')
     df = pd.read_hdf(source_store, 'land_use_taz')
@@ -57,13 +57,13 @@ def create_subset(dest_store, dest_skims, maxZone, households_sample_size=0):
         skims_out[skimName].attrs.TITLE = ''  # remove funny character for OMX viewer
 
 
-create_subset(dest_store='mtc_tm1_sf/data/mtc_asim.h5',
-              dest_skims='mtc_tm1_sf/data/skims.omx',
-              maxZone=190
+create_subset(dest_store='smallse.h5',
+              dest_skims='smallskims.omx',
+              maxZone=2000
               )
 
-create_subset(dest_store='mtc_tm1_test/data/mtc_asim.h5',
-              dest_skims='mtc_tm1_test/data/skims.omx',
-              maxZone=25,
+create_subset(dest_store='smallse.h5',
+              dest_skims='smallskims.omx',
+              maxZone=2000,
               households_sample_size=5000
               )
