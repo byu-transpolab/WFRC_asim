@@ -4,3 +4,5 @@ output/*
 builder_cache/*
 builder_files/*
 data/*
+scripts/skm*
+scripts/skims_wfrc.omx

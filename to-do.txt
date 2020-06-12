@@ -1,0 +1,2 @@
+-Create TRN skims from quickest mode of transit for each o-d pair, currently using local bus as placeholder
+-skims_manifest waux meaning

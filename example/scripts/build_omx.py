@@ -89,8 +89,8 @@ if __name__ == '__main__':
     manifest_file_name = sys.argv[0]
     dest_file_name = sys.argv[1]
 
-    manifest_file_name = 'scripts/skims_manifest.csv'
+    manifest_file_name = 'C:/projects/ActivitySim/activitysim-master/activitysim-master/WFRC/example/scripts/skims_manifest.csv'
     manifest = read_manifest(manifest_file_name)
 
-    dest_file_name = 'scripts/skims_wfrc.omx'
-    source_data_dir = 'scripts'
+    dest_file_name = "C:/projects/ActivitySim/activitysim-master/activitysim-master/WFRC/example/scripts/skims_wfrc.omx"
+    source_data_dir = "C:/projects/ActivitySim/activitysim-master/activitysim-master/WFRC/example/scripts"
