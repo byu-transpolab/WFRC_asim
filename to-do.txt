@@ -1,2 +1,3 @@
 -Create TRN skims from quickest mode of transit for each o-d pair, currently using local bus as placeholder
 -skims_manifest waux meaning
+-Compare person types from constants.py in AS_package and adjust popsim accordingly
