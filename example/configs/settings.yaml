@@ -10,6 +10,7 @@ input_table_list:
     index_col: perid
     column_map:
       PERID: perid
+      PAGE: age
   - tablename: land_use
     filename: land_use_taz.csv
     index_col: TAZ
