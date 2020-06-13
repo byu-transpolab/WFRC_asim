@@ -6,7 +6,7 @@ input_table_list:
     column_map:
       HHID: household_id
   - tablename: persons
-    filename: symthetic_persons2.csv
+    filename: synthetic_persons2.csv
     index_col: perid
     column_map:
       PERID: perid
