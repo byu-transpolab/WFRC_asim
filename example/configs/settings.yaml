@@ -82,7 +82,7 @@ models:
   - write_tables
 
 # to resume after last successful checkpoint, specify resume_after: _
-#resume_after: trip_mode_choice
+# resume_after: compute_accessibility
 
 output_tables:
   h5_store: True

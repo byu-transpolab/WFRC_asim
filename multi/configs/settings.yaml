@@ -51,7 +51,7 @@ trace_od:
 #trace_od: [5, 11]
 
 # to resume after last successful checkpoint, specify resume_after: _
-#resume_after: trip_purpose_and_destination
+# resume_after: compute_accessibility
 
 models:
   ### mp_initialize step
