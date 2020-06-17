@@ -18,14 +18,14 @@ input_table_list:
 skims_file: skims_wfrc.omx
 
 #number of households to simulate
-households_sample_size:  100
+households_sample_size:  0
 # simulate all households
 #households_sample_size: 0
 
 chunk_size: 0
 
 # set false to disable variability check in simple_simulate and interaction_simulate
-check_for_variability: False
+check_for_variability: True
 
 # - shadow pricing global switches
 
