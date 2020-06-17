@@ -1,7 +1,7 @@
 #input data store and skims
 input_table_list:
   - tablename: households
-    filename: synthetic_households.csv
+    filename: synthetic_households2.csv
     index_col: household_id
     column_map:
       HHID: household_id
