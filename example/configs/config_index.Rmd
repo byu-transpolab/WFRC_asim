@@ -1,0 +1,143 @@
+---
+title: "Config Files Index"
+author: "Christian Hunter"
+date: "6/17/2020"
+output: html_document
+---
+
+```{r text}
+Config Files Index
+
+Key: *** = missing or requires further investigation
+
+accessibility.csv 
+Calculates peak and off peak round trip times for drive alone and transit, then creates decay variable
+
+Skims:
+SOVTOLL_TIME
+WLK_TRN_WLK series
+DISTWALK
+
+SE variables:
+RETEMPN
+TOTEMP
+--------------------------------------------------------------------------------------------------------------------------
+accessibility.yaml
+Settings for walk, transit, and automobile dispersion variables***, as well as maximum walk distance and OVT/IVT multiplier 
+--------------------------------------------------------------------------------------------------------------------------
+annotate_persons.csv
+Annotates synthetic persons based on several demographic categories
+
+Persons variables:
+age (check case)
+sex (1=male, 2=female)
+PTYPE, PEMPLOY, PSTUDENT (see constants.py below)
+
+constants.py, in activitysim conda package
+HHT_NONE = 0
+HHT_FAMILY_MARRIED = 1
+HHT_FAMILY_MALE = 2
+HHT_FAMILY_FEMALE = 3
+HHT_NONFAMILY_MALE_ALONE = 4
+HHT_NONFAMILY_MALE_NOTALONE = 5
+HHT_NONFAMILY_FEMALE_ALONE = 6
+HHT_NONFAMILY_FEMALE_NOTALONE = 7
+
+HHT_NONFAMILY = [4, 5, 6, 7]
+HHT_FAMILY = [1, 2, 3]
+
+PSTUDENT_GRADE_OR_HIGH = 1
+PSTUDENT_UNIVERSITY = 2
+PSTUDENT_NOT = 3
+
+GRADE_SCHOOL_MAX_AGE = 14
+GRADE_SCHOOL_MIN_AGE = 5
+
+SCHOOL_SEGMENT_NONE = 0
+SCHOOL_SEGMENT_GRADE = 1
+SCHOOL_SEGMENT_HIGH = 2
+SCHOOL_SEGMENT_UNIV = 3
+
+INCOME_SEGMENT_LOW = 1
+INCOME_SEGMENT_MED = 2
+INCOME_SEGMENT_HIGH = 3
+INCOME_SEGMENT_VERYHIGH = 4
+
+PEMPLOY_FULL = 1
+PEMPLOY_PART = 2
+PEMPLOY_NOT = 3
+PEMPLOY_CHILD = 4
+
+PTYPE_FULL = 1
+PTYPE_PART = 2
+PTYPE_UNIVERSITY = 3
+PTYPE_NONWORK = 4
+PTYPE_RETIRED = 5
+PTYPE_DRIVING = 6
+PTYPE_SCHOOL = 7
+PTYPE_PRESCHOOL = 8
+
+CDAP_ACTIVITY_MANDATORY = 'M'
+CDAP_ACTIVITY_NONMANDATORY = 'N'
+CDAP_ACTIVITY_HOME = 'H'
+--------------------------------------------------------------------------------------------------------------------------
+annotate_persons_after_hh.csv
+Adjusts individual value of time based on hh value of time, children have lower value
+--------------------------------------------------------------------------------------------------------------------------
+annotate_persons_cdap.csv
+Marks persons who stay at home or have one of several unique daily activity patterns
+--------------------------------------------------------------------------------------------------------------------------
+annotate_persons_jtp.csv 
+Give count of how many joint tours a person has participated in
+--------------------------------------------------------------------------------------------------------------------------
+annotate_persons_mtf.csv
+Number of mandatory tours per person
+--------------------------------------------------------------------------------------------------------------------------
+annotate_persons_nmtf.csv
+Number of non-mandatory tours per person
+--------------------------------------------------------------------------------------------------------------------------
+annotate_persons_school.csv
+Skims:
+SOV_TIME_MD (free flow travel time)
+Calculate time to and from school
+--------------------------------------------------------------------------------------------------------------------------
+annotate_persons_workplace.csv
+Skims:
+WLK_TRN_WLK
+DIST
+DISTWALK
+
+Other:
+Walk speed = 3mph
+
+Calculate time to work using different modes and time savings using automobile
+--------------------------------------------------------------------------------------------------------------------------
+atwork_subtour_destination.csv
+Coefficients for destination choice based on distance, logsum, and atwork
+--------------------------------------------------------------------------------------------------------------------------
+atwork_subtour_destination.yaml
+Other: 
+Sample size = 30
+IN_PERIOD=OUT_PERIOD=14
+
+Settings for atwork subtours
+--------------------------------------------------------------------------------------------------------------------------
+atwork_subtour_destination_sample.csv
+Coefficients based on distance bins
+--------------------------------------------------------------------------------------------------------------------------
+atwork_subtour_frequency.csv
+Person variables:
+PEMPLOY
+PTYPE
+
+Constants and coefficients for no_subtours, eat, business1, maint, business2, and eat_business subtours based on several incredibly specific person types and subtypes
+--------------------------------------------------------------------------------------------------------------------------
+atwork_subtour_frequency.yaml
+Nothing of note
+--------------------------------------------------------------------------------------------------------------------------
+atwork_subtour_frequency_alternatives.csv
+Defines subtours listed in atwork_subtour_frequency.csv as combinations of eat, business, and maint
+--------------------------------------------------------------------------------------------------------------------------
+atwork_subtour_frequency_annotate_tours_preprocessor.csv
+Incredibly complex table defining aspects of atwork subtours
+```
