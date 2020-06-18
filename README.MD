@@ -7,7 +7,9 @@ using PopulationSim, WFRC data, and US Census data. For more information, see th
 websites:
 
 https://activitysim.github.io/
+
 https://wfrc.org/
+
 https://github.com/byu-transpolab/populationsim_wfrc
 
 Some setup is required to get the skims and synthetic population in the format expected 
