@@ -34,5 +34,6 @@ write_csv(as_persons, "data/synthetic_persons2.csv")
 as_hh <- read_csv("data/synthetic_households.csv") %>% 
   mutate(income = round(HHINCADJ * (10^(-6))), digits = 0) %>% 
   setnames("NP", "hhsize") %>% 
-  setnames("WIF", "num_workers")
+  setnames("WIF", "num_workers") %>% 
+  setnames("VEH", "VEHICL")
 write_csv(as_hh, "data/synthetic_households2.csv")
