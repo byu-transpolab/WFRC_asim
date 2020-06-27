@@ -40,19 +40,3 @@ as_hh <- read_csv("data/synthetic_households.csv") %>%
   setnames("WIF", "num_workers") %>% 
   setnames("VEH", "VEHICL")
 write_csv(as_hh, "data/synthetic_households2.csv")
-
-
-##Verify that skims have no missing values
-skims <- read_csv("setup/skims_manifest.csv") %>% 
-  select(Token, TimePeriod) %>% 
-  mutate(
-    name = case_when(
-      startsWith(Token, "DIST") ~ Token,
-      T ~ paste(Token, TimePeriod, sep = "_")
-    )
-  )
-
-for (i in 1:length(skims)){
-  omx <- read_omx("example/data/skims_wfrc.omx", skims$name[i])
-  num_na <- sum(is.na(omx))
-  print(paste(skims$name[i], "...", num_na))
