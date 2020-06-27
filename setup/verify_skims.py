@@ -9,8 +9,12 @@ import pandas as pd
 pd.set_option('display.max_rows', 1000)
 
 skims = pd.read_csv("setup/skims_manifest.csv")
+omx_data = omx.open_file("example/data/skims_wfrc.omx", 'r')
 for key in skims['name']:
-    mode = omx.open_file("example/data/skims_wfrc.omx", 'r')[key]
+    mode = omx_data[key]
     mode = pd.DataFrame(mode)
-    num_na = mode.isnull().sum().sum()
-    print(key + "..." + str(num_na))
+    num_na = mode.isnull().values.any()
+    if num_na == False:
+        print(key + "...no NAs")
+    else:
+        print(key + "...contains NA")
