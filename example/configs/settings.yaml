@@ -40,17 +40,18 @@ use_shadow_pricing: False
 #trace household id; comment out or leave empty for no trace
 # households with all tour types
 #  [ 728370 1234067 1402924 1594625 1595333 1747572 1896849 1931818 2222690 2344951 2677154]
-#trace_hh_id: 701664
+trace_hh_id: 1
 
 # trace origin, destination in accessibility calculation; comment out or leave empty for no trace
-#trace_od: [5, 11]
-trace_od:
+trace_od: [9, 32]
+#trace_od:
 
 
 models:
   - initialize_landuse
   - compute_accessibility
   - initialize_households
+  - write_tables
   - school_location
   - workplace_location
   - auto_ownership_simulate
