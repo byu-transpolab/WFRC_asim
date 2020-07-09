@@ -79,4 +79,6 @@ with omx.open_file(dest_file_name, 'a') as dest_omx:
                 print("deleting existing dest key '%s'" % (dest_key,))
                 dest_omx.removeNode(dest_omx.root.data, dest_key)
 
+            data = np.delete(data, np.r_[135:140, 420:422, 1781:1788, 2873:2881], axis = 0)
+            data = np.delete(data, np.r_[135:140, 420:422, 1781:1788, 2873:2881], axis = 1)
             dest_omx[dest_key] = data
