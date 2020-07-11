@@ -7,6 +7,7 @@ import os
 
 import pandas as pd
 import openmatrix as omx
+import numpy as np
 
 
 def read_manifest(manifest_file_name):

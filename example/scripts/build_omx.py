@@ -79,6 +79,8 @@ def compile_omx_files(manifest, dest_file_name, source_data_dir):
                     print("deleting existing dest key '%s'" % (dest_key,))
                     dest_omx.removeNode(dest_omx.root.data, dest_key)
 
+                data = np.delete(data, np.r_[135:140, 420:422, 1781:1788, 2873:2881], axis = 0)
+                data = np.delete(data, np.r_[135:140, 420:422, 1781:1788, 2873:2881], axis = 1)
                 dest_omx[dest_key] = data
 
 
@@ -89,7 +91,7 @@ if __name__ == '__main__':
     manifest_file_name = sys.argv[0]
     dest_file_name = sys.argv[1]
 
-    manifest_file_name = 'C:/projects/ActivitySim/activitysim-master/activitysim-master/WFRC/example/scripts/skims_manifest.csv'
+    manifest_file_name = 'C:/projects/ActivitySim/activitysim-master/activitysim-master/WFRC/setup/skims_manifest.csv'
     manifest = read_manifest(manifest_file_name)
 
     dest_file_name = "C:/projects/ActivitySim/activitysim-master/activitysim-master/WFRC/example/scripts/skims_wfrc.omx"
