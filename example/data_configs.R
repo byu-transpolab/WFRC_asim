@@ -3,6 +3,10 @@ library(tidyverse)
 library(data.table)
 library(omxr)
 
+##In the process of running ActivitySim for the Wasatch Front region, it became clear that certain 
+##changes had to be made to the raw synthetic population for it to be accepted by AS. This included
+##classifying person types and renaming several columns. 
+
 ##Add necessary columns to persons for ActivtySim, update TAZ numbers
 as_persons <- read_csv("data/synthetic_persons.csv")
 as_persons$perid <- 1:nrow(as_persons)
@@ -62,8 +66,9 @@ as_hh <- read_csv("data/synthetic_households.csv") %>%
 
 write_csv(as_hh, "data/synthetic_households2.csv")
 
-##Update ZONE numbers for SE data
+##Update zone numbers for SE data
 SE <- read_csv("data/SE_Data.csv") %>% 
+  filter(!ZONE %in% c(136:140, 421:422, 1782:1788, 2874:2881)) %>% 
   mutate(
     ZONE2 = case_when(
       ZONE < 136 ~ ZONE,
@@ -73,6 +78,7 @@ SE <- read_csv("data/SE_Data.csv") %>%
     )
   ) %>% 
   subset(select = -c(ZONE)) %>% 
-  rename(ZONE = ZONE2)
+  rename(ZONE = ZONE2) %>% 
+  sftaz = ZONE
 
 write_csv(SE, "data/land_use_taz.csv")
