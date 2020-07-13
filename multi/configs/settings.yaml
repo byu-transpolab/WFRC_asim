@@ -47,8 +47,8 @@ stagger: 0
 # - tracing
 #trace_hh_id:
 #trace_od:
-trace_hh_id: 42241
-trace_od: [951, 950]
+trace_hh_id: 42245
+trace_od: [1, 82]
 
 # to resume after last successful checkpoint, specify resume_after: _
 # resume_after: compute_accessibility
@@ -58,7 +58,6 @@ models:
   - initialize_landuse
   - compute_accessibility
   - initialize_households
-  - write_tables
   ### mp_households step
   - school_location
   - workplace_location
