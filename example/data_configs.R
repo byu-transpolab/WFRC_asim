@@ -68,18 +68,20 @@ as_hh <- read_csv("data/synthetic_households.csv") %>%
 write_csv(as_hh, "data/synthetic_households2.csv")
 
 ##Update zone numbers for SE data
-SE <- read_csv("data/SE_Data.csv") %>% 
-  filter(!ZONE %in% c(136:140, 421:422, 1782:1788, 2874:2881)) %>% 
+SE <- read_csv("data/SE_Data.csv") 
+SE <- filter(SE, !SE$ZONE %in% c(136:140, 421:422, 1782:1788, 2874:2881)) %>% 
   mutate(
-    ZONE2 = case_when(
+    ZONE = case_when(
       ZONE < 136 ~ ZONE,
       ZONE > 140 & ZONE < 421 ~ (ZONE - 5),
       ZONE > 422 & ZONE < 1782 ~ (ZONE -7),
       T ~ (ZONE - 14)
+    ),
+    RESACRE = case_when(
+      RESACRE == 0 ~ 1,
+      T ~ RESACRE
     )
-  ) %>% 
-  subset(select = -c(ZONE)) %>% 
-  rename(ZONE = ZONE2) %>% 
-  sftaz = ZONE
+  )
+SE$sftaz <- SE$ZONE
 
 write_csv(SE, "data/land_use_taz.csv")
