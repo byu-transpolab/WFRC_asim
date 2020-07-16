@@ -7,9 +7,10 @@ library(omxr)
 ##changes had to be made to the raw synthetic population for it to be accepted by AS. This included
 ##classifying person types and renaming several columns. 
 
-##Add necessary columns to persons for ActivtySim, update TAZ numbers
+##Add necessary columns to persons for ActivitySim, update TAZ numbers
 as_persons <- read_csv("data/synthetic_persons.csv")
 as_persons$perid <- 1:nrow(as_persons)
+as_persons$person_id <- as_persons$perid
 as_persons <- as_persons %>% 
   setnames("AGEP", "age") %>% 
   setnames("SEX", "sex") %>% 
