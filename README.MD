@@ -20,7 +20,7 @@ Configure skims:
 2. Move the transit skims and the add_matrices.py file into their own folder and run 
 using Anaconda or Python
 3. Put these updated transit skims and auto skims in the /example/scripts folder
-4. Set the working directory as the /example folder, then run "python scripts/combine_omx.py"
+4. Set the working directory as the /example folder, then run "python scripts/build_omx.py"
 using the asimtest conda environment created when installing ActivitySim
 5. Copy the final skims_wfrc.omx file into /example/data
 
