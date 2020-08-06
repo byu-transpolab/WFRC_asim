@@ -1,5 +1,3 @@
-inherit_settings: True
-
 shadow_pricing_models:
   school: school_location
   workplace: workplace_location
@@ -9,7 +7,7 @@ shadow_pricing_models:
 LOAD_SAVED_SHADOW_PRICES: True
 
 # number of shadow price iterations for cold start
-MAX_ITERATIONS: 100
+MAX_ITERATIONS: 10
 
 # number of shadow price iterations for warm start (after loading saved shadow_prices)
 MAX_ITERATIONS_SAVED: 1

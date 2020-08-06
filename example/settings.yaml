@@ -1,4 +1,4 @@
-# input tables
+#input data store and skims
 input_table_list:
   - tablename: households
     filename: synthetic_households2.csv
@@ -7,27 +7,22 @@ input_table_list:
       HHID: household_id
   - tablename: persons
     filename: synthetic_persons2.csv
-    index_col: person_id
+    index_col: perid
     column_map:
-      PERID: person_id
+      PERID: perid
   - tablename: land_use
     filename: land_use_taz.csv
     index_col: TAZ
     column_map:
       ZONE: TAZ
-
-# input skims
 skims_file: skims_wfrc.omx
 
-# convert input CSVs to HDF5 format and save to outputs directory
-# create_input_store: True
-
-# number of households to simulate
+#number of households to simulate
 households_sample_size:  0
 # simulate all households
-# households_sample_size: 0
+#households_sample_size: 0
 
-chunk_size: 500000000
+chunk_size: 0
 
 # set false to disable variability check in simple_simulate and interaction_simulate
 check_for_variability: False
@@ -37,18 +32,18 @@ check_for_variability: False
 # turn shadow_pricing on and off for all models (e.g. school and work)
 # shadow pricing is deprecated for less than full samples
 # see shadow_pricing.yaml for additional settings
-use_shadow_pricing: False
+use_shadow_pricing: True
 
 
 # - tracing
 
-# trace household id; comment out or leave empty for no trace
+#trace household id; comment out or leave empty for no trace
 # households with all tour types
 #  [ 728370 1234067 1402924 1594625 1595333 1747572 1896849 1931818 2222690 2344951 2677154]
-#trace_hh_id:
+trace_hh_id: 19
 
 # trace origin, destination in accessibility calculation; comment out or leave empty for no trace
-# trace_od: [5, 11]
+trace_od: [1, 82]
 #trace_od:
 
 
@@ -56,6 +51,7 @@ models:
   - initialize_landuse
   - compute_accessibility
   - initialize_households
+  - write_tables
   - school_location
   - workplace_location
   - auto_ownership_simulate
@@ -90,7 +86,7 @@ models:
 # resume_after: compute_accessibility
 
 output_tables:
-  h5_store: False
+  h5_store: True
   action: include
   prefix: final_
   tables:
@@ -107,14 +103,13 @@ urban_threshold: 4
 cbd_threshold: 2
 rural_threshold: 6
 
-# upperEA	Upper limit on time of day for the Early morning time period		5
-# upperAM	Upper limit on time of day for the AM peak time period		10
-# upperMD	Upper limit on time of day for the Midday time period		15
-# upperPM	Upper limit on time of day for the PM time peak period		19
+#upperEA	Upper limit on time of day for the Early morning time period		5
+#upperAM	Upper limit on time of day for the AM peak time period		10
+#upperMD	Upper limit on time of day for the Midday time period		15
+#upperPM	Upper limit on time of day for the PM time peak period		19
 
 skim_time_periods:
-    period_minutes: 60
-    periods:
+    hours:
         - 0
         - 6
         - 11

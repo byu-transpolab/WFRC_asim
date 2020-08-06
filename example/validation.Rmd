@@ -1,0 +1,104 @@
+---
+title: "Validation"
+author: "Christian Hunter"
+date: "8/5/2020"
+output: html_document
+---
+
+```{r tables}
+library(tidyverse)
+
+## Read in output files
+wfrc_trips <- read_csv("validation/WFRC_trips.csv")
+wfrc_school <- read_csv("validation/WFRC_school.csv")
+as_trips <- read_csv("output/final_trips.csv")
+as_tours <- read_csv("output/final_tours.csv", col_types = list(
+  composition = col_character(), parent_tour_id = col_integer()))
+
+## Modes List
+auto <- c('DRIVEALONEFREE', "DRIVEALONETOLL", "SHARED2FREE", "SHARED2TOLL", 
+          "SHARED3FREE", "SHARED3TOLL")
+nonmotor <- c("NONMOTOR")
+transit <- c("WALK_LOC", "DRIVE_LOC", "WALK_MAX", 'DRIVE_MAX', 'WALK_BRT', 'DRIVE_BRT',
+             'WALK_EXP', 'DRIVE_EXP', 'WALK_TRAX', 'DRIVE_TRAX', 'WALK_COM', 'DRIVE_COM')
+totals <- c('AUTO_TOTAL', 'TRANSIT_TOTAL')
+combined_modes <- auto %>% 
+  append(nonmotor) %>% 
+  append(transit) %>% 
+  append(totals)
+
+## Organize WFRC summary to align with AS format
+index_row <- c(6,7,9,10,13,14,2,18,19,21,22,24,25,27,28,30,31,33,34,1,16)
+index_col <- c(2,5,8,11)
+trip_types <- c("HWB_wf", "HBC_wf", "HBO_wf", "NHB_wf")
+comp_table <- as.data.frame(combined_modes) 
+comp_table[, trip_types] <- NA
+for (type in 1:length(trip_types)){
+  for (i in 1:length(index_row)){
+    if (i == 1){
+      vals <- wfrc_trips[index_row[i], index_col[type]]
+    } else{
+      vals <- vals %>% 
+        append(wfrc_trips[index_row[i], index_col[type]])
+    }
+  }
+  comp_table[[type + 1]] <- vals
+}
+
+## Show all AS trip combinations
+combos <- group_by(as_trips, primary_purpose, purpose, trip_count) %>% tally() %>% print(n=100)
+
+## Get HBW stats
+as_hbw <- as_trips %>% 
+  mutate(labels = case_when(
+    trip_num == 1 & purpose == "work" ~ "HBW",
+    trip_num == 1 & purpose == "Home" & primary_purpose == "work" ~ "HBW"
+  )) %>% 
+  group_by(labels, trip_mode) %>%
+  tally() %>% 
+  filter(labels %in% "HBW")
+
+## Get HBO stats
+as_hbo <- as_trips %>% 
+  mutate(labels = case_when(
+    trip_num == 1 & purpose != "work" & primary_purpose != "atwork" & 
+    purpose != "school" ~ "HBO"
+  )) %>% 
+  group_by(labels, trip_mode) %>%
+  tally() %>% 
+  filter(labels %in% "HBO")
+
+## Get NHB stats
+as_nhb <- as_trips %>% 
+   mutate(labels = case_when(
+    trip_num == 1 & primary_purpose == "work" & purpose != "work" & purpose != "Home" ~ "NHB" 
+  )) %>% 
+  group_by(labels, trip_mode) %>%
+  tally() %>% 
+  filter(labels %in% "NHB")
+
+## Get HBShop stats
+as_hbc <- as_trips %>%
+ mutate(labels = case_when(
+    trip_num == 1 & primary_purpose == "work" & purpose != "work" ~ "HBC"
+  )) %>% 
+  group_by(labels, trip_mode) %>%
+  tally() %>% 
+  filter(labels %in% "HBC") 
+
+## Combine tables
+comp_table <- comp_table %>% 
+  add_column(HBW_as = 0, .after = 2) %>% 
+  add_column(HBO_as = 0, .after = 5)
+for (i in 1: length(as_hbw$trip_mode)){
+  row = match(as_hbw$trip_mode[i], combined_modes)
+  comp_table$HBW_as[row] = as_hbw$n[i]
+}
+for (i in 1: length(as_hbo$trip_mode)){
+  row = match(as_hbo$trip_mode[i], combined_modes)
+  comp_table$HBO_as[row] = as_hbo$n[i]
+}
+
+
+
+```

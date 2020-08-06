@@ -5,3 +5,6 @@ builder_cache/*
 builder_files/*
 data/*
 *.RData
+example_small/*
+pleasework/*
+example_full/*

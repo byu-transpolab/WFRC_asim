@@ -85,3 +85,12 @@ SE <- filter(SE, !SE$ZONE %in% c(136:140, 421:422, 1782:1788, 2874:2881)) %>%
 SE$sftaz <- SE$ZONE
 
 write_csv(SE, "data/land_use_taz.csv")
+
+##Reduce population to only households with broken atwork subtours
+awstlist <- read_csv("C:/projects/ActivitySim/activitysim-master/activitysim-master/WFRC/multi/debug/broken_hh.csv")
+brk_hh <- as_hh %>% 
+  filter(household_id %in% awstlist$V7)
+write_csv(brk_hh, "C:/projects/ActivitySim/activitysim-master/activitysim-master/WFRC/example_small/data/synthetic_households2.csv")
+brk_p <- as_persons %>%
+  filter(household_id %in% brk_hh$household_id)
+write_csv(brk_p, "C:/projects/ActivitySim/activitysim-master/activitysim-master/WFRC/example_small/data/synthetic_persons2.csv")
