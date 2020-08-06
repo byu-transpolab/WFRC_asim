@@ -2,4 +2,4 @@
 -###skims_manifest waux meaning
 -###Compare person types from constants.py in AS_package and adjust popsim accordingly
 -Fix modes 5 and 9?
--Multicore broken, single working for subsample
+-Multicore broken, single working after removing households that gave problem for atwork subtours
