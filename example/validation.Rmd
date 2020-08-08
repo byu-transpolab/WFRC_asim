@@ -4,9 +4,11 @@ author: "Christian Hunter"
 date: "8/5/2020"
 output: html_document
 ---
-
-```{r tables}
+```{r wfrc_tables}
 library(tidyverse)
+BiocManager::install("rhdf5")
+library(rhdf5)
+library(future.apply)
 
 ## Read in output files
 wfrc_trips <- read_csv("validation/WFRC_trips.csv")
@@ -19,8 +21,11 @@ as_tours <- read_csv("output/final_tours.csv", col_types = list(
 auto <- c('DRIVEALONEFREE', "DRIVEALONETOLL", "SHARED2FREE", "SHARED2TOLL", 
           "SHARED3FREE", "SHARED3TOLL")
 nonmotor <- c("NONMOTOR")
+nonmotor_as <- c("BIKE", "WALK")
 transit <- c("WALK_LOC", "DRIVE_LOC", "WALK_MAX", 'DRIVE_MAX', 'WALK_BRT', 'DRIVE_BRT',
              'WALK_EXP', 'DRIVE_EXP', 'WALK_TRAX', 'DRIVE_TRAX', 'WALK_COM', 'DRIVE_COM')
+transit_as <- c("WALK_LOC", "DRIVE_LOC", "WALK_MAX", 'DRIVE_MAX', 'WALK_HVY', 'DRIVE_HVY',
+             'WALK_EXP', 'DRIVE_EXP', 'WALK_LRF', 'DRIVE_LRF', 'WALK_COM', 'DRIVE_COM')
 totals <- c('AUTO_TOTAL', 'TRANSIT_TOTAL')
 combined_modes <- auto %>% 
   append(nonmotor) %>% 
@@ -44,7 +49,114 @@ for (type in 1:length(trip_types)){
   }
   comp_table[[type + 1]] <- vals
 }
+```
 
+```{r county_matrix}
+## Read in crosswalk from PopulationSim and list of external TAZs, remove these TAZs
+xTAZs <- read_csv("validation/external_tazs.csv")
+ps_xw <- read_csv("validation/geo_cross_walk.csv") %>% 
+  filter(!TAZ %in% xTAZs$xTAZ) %>% 
+  mutate(
+    TAZ2 = case_when(
+      TAZ < 136 ~ TAZ,
+      TAZ > 140 & TAZ < 421 ~ (TAZ - 5),
+      TAZ > 422 & TAZ < 1782 ~ (TAZ -7),
+      T ~ (TAZ - 14)
+    )
+  ) %>% 
+  subset(select = -c(TAZ, REGION, TRACT, geometry)) %>% 
+  rename(TAZ = TAZ2)
+
+## Find county for each trip origin and destination
+as_trips <- as_trips %>% 
+  mutate(
+    ocounty = case_when(
+      origin < 136 ~ "Box_Elder",
+      origin > 135 & origin < 417 ~ "Weber",
+      origin > 416 & origin < 648 ~ "Davis",
+      origin > 647 & origin < 1775 ~ "Salt_Lake",
+      origin > 1774 & origin < 2860 ~ "Utah",
+      T ~ "NA"
+    ),
+    dcounty = case_when(
+      destination < 136 ~ "Box_Elder",
+      destination > 135 & destination < 417 ~ "Weber",
+      destination > 416 & destination < 648 ~ "Davis",
+      destination > 647 & destination < 1775 ~ "Salt_Lake",
+      destination > 1774 & destination < 2860 ~ "Utah",
+      T ~ "NA")
+  )
+
+## Create OD matrix
+od <- as_trips %>% 
+  group_by(ocounty, dcounty) %>% 
+  tally() %>% 
+  spread(dcounty, n)
+```
+
+```{r distance}
+## Create trip length frequency distribution
+skims = H5Fopen("data/skims_wfrc.omx")
+dist = skims$"/data/DIST" %>% 
+  as.data.frame()
+distance <- rep(1, nrow(as_trips))
+o_col <- as_trips$origin
+d_col <- as_trips$destination
+
+## Be patient, takes a couple minutes
+for (i in 1:nrow(as_trips)){
+  o <- o_col[i]
+  d <- d_col[i]
+  distance[i] <- dist[o,d]
+}
+## Histogram
+as_trips <- as_trips%>% mutate(trip_length = distance)
+ggplot(as_trips) + geom_histogram(aes(x = trip_length), binwidth = .5) + xlim(0,20) + 
+  theme_bw(base_size = 18) + labs(y = "Frequency", x = "Trip Length")
+## Line graph
+ggplot(as_trips) + geom_freqpoly(aes(x = trip_length), binwidth = .25) + xlim(0,20) + 
+  theme_bw(base_size = 18) + labs(y = "Frequency", x = "Trip Length")
+## Line graph, segmented by mode
+ggplot(as_trips) + geom_density(aes(x = trip_length, color = trip_mode)) + xlim(0,20) + 
+  theme_bw(base_size = 18) + labs(y = "Frequency", x = "Trip Length", color = "Mode")
+## Automobile modes
+tlfd_a <- as_trips %>% 
+  filter(trip_mode %in% auto) %>% 
+  select(c(trip_mode, trip_length))
+ggplot(tlfd_a) + geom_density(aes(x = trip_length, color = trip_mode)) + xlim(0,20) + 
+  theme_bw(base_size = 18) + labs(y = "Frequency", x = "Trip Length", color = "Mode")
+## Nonmotorized modes
+tlfd_n <- as_trips %>% 
+  filter(trip_mode %in% nonmotor_as) %>% 
+  select(c(trip_mode, trip_length))
+ggplot(tlfd_n) + geom_density(aes(x = trip_length, color = trip_mode)) + xlim(0,20) + 
+  theme_bw(base_size = 18) + labs(y = "Frequency", x = "Trip Length", color = "Mode")
+## Transit modes
+tlfd_t <- as_trips %>% 
+  filter(trip_mode %in% transit_as) %>% 
+  select(c(trip_mode, trip_length))
+ggplot(tlfd_t) + geom_density(aes(x = trip_length, color = trip_mode)) + xlim(0,40) + 
+theme_bw(base_size = 18) + labs(y = "Frequency", x = "Trip Length", color = "Mode")
+## By mode group
+as_trips <- as_trips %>% 
+  mutate(
+    mode_group = case_when(
+      trip_mode %in% auto ~ "Auto",
+      trip_mode %in% nonmotor_as ~"Nonmotorized",
+      trip_mode %in% transit_as ~ "Transit"
+    )
+  )
+ggplot(as_trips) + geom_density(aes(x = trip_length, color = mode_group)) + xlim(0,40) + 
+theme_bw(base_size = 18) + labs(y = "Frequency", x = "Trip Length", color = "Mode")
+## There is a large difference between nonmotorized and the other two groups, so separate them
+a_vs_t <- as_trips %>% 
+  select(c(trip_length, mode_group)) %>% 
+  filter(!mode_group == "Nonmotorized")
+ggplot(a_vs_t) + geom_density(aes(x = trip_length, color = mode_group)) + xlim(0,40) + 
+theme_bw(base_size = 18) + labs(y = "Frequency", x = "Trip Length", color = "Mode")
+```
+
+```{r as_stats}
 ## Show all AS trip combinations
 combos <- group_by(as_trips, primary_purpose, purpose, trip_count) %>% tally() %>% print(n=100)
 
