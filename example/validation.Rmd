@@ -9,6 +9,9 @@ library(tidyverse)
 BiocManager::install("rhdf5")
 library(rhdf5)
 library(future.apply)
+devtools::install_github("cloudyr/rmote") # To easily see all plots
+library(rmote)
+start_rmote()
 
 ## Read in output files
 wfrc_trips <- read_csv("validation/WFRC_trips.csv")
@@ -94,7 +97,7 @@ od <- as_trips %>%
   spread(dcounty, n)
 ```
 
-```{r distance}
+```{r distance_as}
 ## Create trip length frequency distribution
 skims = H5Fopen("data/skims_wfrc.omx")
 dist = skims$"/data/DIST" %>% 
@@ -103,12 +106,53 @@ distance <- rep(1, nrow(as_trips))
 o_col <- as_trips$origin
 d_col <- as_trips$destination
 
-## Be patient, takes a couple minutes
+## Be patient, takes a couple minutes (FIXME - parallelize)
 for (i in 1:nrow(as_trips)){
   o <- o_col[i]
   d <- d_col[i]
   distance[i] <- dist[o,d]
 }
+```
+
+```{r distance_wfrc}
+## Open WFRC production-attraction OMX
+pa_omx = H5Fopen("validation/AllTrips_pkok.mtx.omx")
+omx_index <- h5ls(pa_omx) %>% 
+  select(name)
+## Open WFRC distance matrix (with 2881-TAZ numbering scheme)
+dist_mtx <- H5Fopen("scripts/skm_auto_Ok.mtx.omx")
+dTAZ <- rep(1:2881, times = 2881, each = 1) %>% 
+  as.data.frame()
+oTAZ <- rep(1:2881, times = 1, each =2881) %>% 
+  as.data.frame()
+dist_v <- as.vector(dist_mtx$"/data/xydist")
+## Add trip counts for each mode
+DRIVEALONEFREE <- as.vector(t(pa_omx$"/data/DA"))
+SHARED2FREE <- as.vector(t(pa_omx$"/data/SR2"))
+SHARED3FREE <- as.vector(t(pa_omx$"/data/SR3p"))
+Auto <- as.vector(t(pa_omx$"/data/auto"))
+DRIVE_COM <- as.vector(t(pa_omx$"/data/dCRT"))
+DRIVE_EXP <- as.vector(t(pa_omx$"/data/dEXP"))
+DRIVE_LOC <- as.vector(t(pa_omx$"/data/dLCL"))
+DRIVE_LRF <- as.vector(t(pa_omx$"/data/dLRT"))
+DRIVE_HVY <- as.vector(t(pa_omx$"/data/dmode9"))
+Motor <- as.vector(t(pa_omx$"/data/motor"))
+Nonmotorized <- as.vector(t(pa_omx$"/data/nonmotor"))
+Transit <- as.vector(t(pa_omx$"/data/transit"))
+WALK_COM <- as.vector(t(pa_omx$"/data/wCRT"))
+WALK_EXP <- as.vector(t(pa_omx$"/data/wEXP"))
+WALK_LOC <- as.vector(t(pa_omx$"/data/wLCL"))
+WALK_LRF <- as.vector(t(pa_omx$"/data/wLRT"))
+WALK_HVY <- as.vector(t(pa_omx$"/data/wmode9"))
+tlfd_wfrc <- data.frame(c(oTAZ, dTAZ, dist_v, DRIVEALONEFREE, SHARED2FREE, SHARED3FREE, Auto, DRIVE_COM, DRIVE_EXP,
+                          DRIVE_HVY, DRIVE_LOC, DRIVE_LRF, Motor, Nonmotorized, Transit, WALK_COM, WALK_EXP, WALK_HVY,
+                          WALK_LOC, WALK_LRF))
+tlfd_wfrc <- matrix(c(oTAZ, dTAZ, dist_v, DRIVEALONEFREE, SHARED2FREE, SHARED3FREE, Auto, DRIVE_COM, DRIVE_EXP,
+                          DRIVE_HVY, DRIVE_LOC, DRIVE_LRF, Motor, Nonmotorized, Transit, WALK_COM, WALK_EXP, WALK_HVY,
+                          WALK_LOC, WALK_LRF), nrow = length(oTAZ))
+```
+
+```{r plots_galore}
 ## Histogram
 as_trips <- as_trips%>% mutate(trip_length = distance)
 ggplot(as_trips) + geom_histogram(aes(x = trip_length), binwidth = .5) + xlim(0,20) + 
@@ -135,7 +179,7 @@ ggplot(tlfd_n) + geom_density(aes(x = trip_length, color = trip_mode)) + xlim(0,
 tlfd_t <- as_trips %>% 
   filter(trip_mode %in% transit_as) %>% 
   select(c(trip_mode, trip_length))
-ggplot(tlfd_t) + geom_density(aes(x = trip_length, color = trip_mode)) + xlim(0,40) + 
+ggplot(tlfd_t) + geom_density(aes(x = trip_length, color = trip_mode)) + xlim(0,20) + 
 theme_bw(base_size = 18) + labs(y = "Frequency", x = "Trip Length", color = "Mode")
 ## By mode group
 as_trips <- as_trips %>% 
@@ -146,13 +190,13 @@ as_trips <- as_trips %>%
       trip_mode %in% transit_as ~ "Transit"
     )
   )
-ggplot(as_trips) + geom_density(aes(x = trip_length, color = mode_group)) + xlim(0,40) + 
+ggplot(as_trips) + geom_density(aes(x = trip_length, color = mode_group)) + xlim(0,20) + 
 theme_bw(base_size = 18) + labs(y = "Frequency", x = "Trip Length", color = "Mode")
 ## There is a large difference between nonmotorized and the other two groups, so separate them
 a_vs_t <- as_trips %>% 
   select(c(trip_length, mode_group)) %>% 
   filter(!mode_group == "Nonmotorized")
-ggplot(a_vs_t) + geom_density(aes(x = trip_length, color = mode_group)) + xlim(0,40) + 
+ggplot(a_vs_t) + geom_density(aes(x = trip_length, color = mode_group)) + xlim(0,20) + 
 theme_bw(base_size = 18) + labs(y = "Frequency", x = "Trip Length", color = "Mode")
 ```
 
