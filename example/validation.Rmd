@@ -3,15 +3,16 @@ title: "Validation"
 author: "Christian Hunter"
 date: "8/5/2020"
 output: html_document
+params:
+  graph: Transit
 ---
-```{r wfrc_tables}
+```{r wfrc_tables, include=FALSE}
 library(tidyverse)
-BiocManager::install("rhdf5")
+#BiocManager::install("rhdf5")
 library(rhdf5)
-library(future.apply)
-devtools::install_github("cloudyr/rmote") # To easily see all plots
+#devtools::install_github("cloudyr/rmote") # To easily see all plots
 library(rmote)
-start_rmote()
+#start_rmote() # run servr::daemon_stop(1) to stop
 
 ## Read in output files
 wfrc_trips <- read_csv("validation/WFRC_trips.csv")
@@ -23,7 +24,7 @@ as_tours <- read_csv("output/final_tours.csv", col_types = list(
 ## Modes List
 auto <- c('DRIVEALONEFREE', "DRIVEALONETOLL", "SHARED2FREE", "SHARED2TOLL", 
           "SHARED3FREE", "SHARED3TOLL")
-nonmotor <- c("NONMOTOR")
+nonmotor <- c("Nonmotorized")
 nonmotor_as <- c("BIKE", "WALK")
 transit <- c("WALK_LOC", "DRIVE_LOC", "WALK_MAX", 'DRIVE_MAX', 'WALK_BRT', 'DRIVE_BRT',
              'WALK_EXP', 'DRIVE_EXP', 'WALK_TRAX', 'DRIVE_TRAX', 'WALK_COM', 'DRIVE_COM')
@@ -54,7 +55,7 @@ for (type in 1:length(trip_types)){
 }
 ```
 
-```{r county_matrix}
+```{r county_matrix, include=FALSE}
 ## Read in crosswalk from PopulationSim and list of external TAZs, remove these TAZs
 xTAZs <- read_csv("validation/external_tazs.csv")
 ps_xw <- read_csv("validation/geo_cross_walk.csv") %>% 
@@ -89,15 +90,19 @@ as_trips <- as_trips %>%
       destination > 1774 & destination < 2860 ~ "Utah",
       T ~ "NA")
   )
+```
 
+```{r}
 ## Create OD matrix
 od <- as_trips %>% 
   group_by(ocounty, dcounty) %>% 
   tally() %>% 
   spread(dcounty, n)
+od
 ```
 
-```{r distance_as}
+
+```{r distance_as, include=FALSE}
 ## Create trip length frequency distribution
 skims = H5Fopen("data/skims_wfrc.omx")
 dist = skims$"/data/DIST" %>% 
@@ -114,45 +119,90 @@ for (i in 1:nrow(as_trips)){
 }
 ```
 
-```{r distance_wfrc}
+```{r distance_wfrc, include=FALSE}
 ## Open WFRC production-attraction OMX
 pa_omx = H5Fopen("validation/AllTrips_pkok.mtx.omx")
 omx_index <- h5ls(pa_omx) %>% 
   select(name)
 ## Open WFRC distance matrix (with 2881-TAZ numbering scheme)
 dist_mtx <- H5Fopen("scripts/skm_auto_Ok.mtx.omx")
-dTAZ <- rep(1:2881, times = 2881, each = 1) %>% 
-  as.data.frame()
-oTAZ <- rep(1:2881, times = 1, each =2881) %>% 
-  as.data.frame()
-dist_v <- as.vector(dist_mtx$"/data/xydist")
-## Add trip counts for each mode
-DRIVEALONEFREE <- as.vector(t(pa_omx$"/data/DA"))
-SHARED2FREE <- as.vector(t(pa_omx$"/data/SR2"))
-SHARED3FREE <- as.vector(t(pa_omx$"/data/SR3p"))
-Auto <- as.vector(t(pa_omx$"/data/auto"))
-DRIVE_COM <- as.vector(t(pa_omx$"/data/dCRT"))
-DRIVE_EXP <- as.vector(t(pa_omx$"/data/dEXP"))
-DRIVE_LOC <- as.vector(t(pa_omx$"/data/dLCL"))
-DRIVE_LRF <- as.vector(t(pa_omx$"/data/dLRT"))
-DRIVE_HVY <- as.vector(t(pa_omx$"/data/dmode9"))
-Motor <- as.vector(t(pa_omx$"/data/motor"))
-Nonmotorized <- as.vector(t(pa_omx$"/data/nonmotor"))
-Transit <- as.vector(t(pa_omx$"/data/transit"))
-WALK_COM <- as.vector(t(pa_omx$"/data/wCRT"))
-WALK_EXP <- as.vector(t(pa_omx$"/data/wEXP"))
-WALK_LOC <- as.vector(t(pa_omx$"/data/wLCL"))
-WALK_LRF <- as.vector(t(pa_omx$"/data/wLRT"))
-WALK_HVY <- as.vector(t(pa_omx$"/data/wmode9"))
-tlfd_wfrc <- data.frame(c(oTAZ, dTAZ, dist_v, DRIVEALONEFREE, SHARED2FREE, SHARED3FREE, Auto, DRIVE_COM, DRIVE_EXP,
-                          DRIVE_HVY, DRIVE_LOC, DRIVE_LRF, Motor, Nonmotorized, Transit, WALK_COM, WALK_EXP, WALK_HVY,
-                          WALK_LOC, WALK_LRF))
-tlfd_wfrc <- matrix(c(oTAZ, dTAZ, dist_v, DRIVEALONEFREE, SHARED2FREE, SHARED3FREE, Auto, DRIVE_COM, DRIVE_EXP,
-                          DRIVE_HVY, DRIVE_LOC, DRIVE_LRF, Motor, Nonmotorized, Transit, WALK_COM, WALK_EXP, WALK_HVY,
-                          WALK_LOC, WALK_LRF), nrow = length(oTAZ))
+dTAZ <- rep(1:2881, times = 2881, each = 1)
+oTAZ <- rep(1:2881, times = 1, each =2881) 
+dist_v <- as.vector(as.numeric(dist_mtx$"/data/xydist")) %>% as.data.frame() 
+## Add trip counts for each mode (ugly but but couldn't get a for loop to work yet)
+DRIVEALONEFREE <- as.vector(t(pa_omx$"/data/DA")) %>% as.data.frame()
+DRIVEALONEFREE <- cbind(DRIVEALONEFREE, dist_v)
+DRIVEALONEFREE$mode <- "DRIVEALONEFREE"
+SHARED2FREE <- as.vector(t(pa_omx$"/data/SR2")) %>% as.data.frame()
+SHARED2FREE <- cbind(SHARED2FREE, dist_v)
+SHARED2FREE$mode <- "SHARED2FREE"
+SHARED3FREE <- as.vector(t(pa_omx$"/data/SR3p")) %>% as.data.frame()
+SHARED3FREE <- cbind(SHARED3FREE, dist_v)
+SHARED3FREE$mode <- "SHARED3FREE"
+Auto <- as.vector(t(pa_omx$"/data/auto")) %>% as.data.frame()
+Auto <- cbind(Auto, dist_v)
+Auto$mode <- "Auto"
+DRIVE_COM <- as.vector(t(pa_omx$"/data/dCRT")) %>% as.data.frame()
+DRIVE_COM <- cbind(DRIVE_COM, dist_v)
+DRIVE_COM$mode <- "DRIVE_COM"
+DRIVE_EXP <- as.vector(t(pa_omx$"/data/dEXP")) %>% as.data.frame()
+DRIVE_EXP <- cbind(DRIVE_EXP, dist_v)
+DRIVE_EXP$mode <- "DRIVE_EXP"
+DRIVE_LOC <- as.vector(t(pa_omx$"/data/dLCL")) %>% as.data.frame()
+DRIVE_LOC <- cbind(DRIVE_LOC, dist_v)
+DRIVE_LOC$mode <- "DRIVE_LOC"
+DRIVE_LRF <- as.vector(t(pa_omx$"/data/dLRT")) %>% as.data.frame()
+DRIVE_LRF <- cbind(DRIVE_LRF, dist_v)
+DRIVE_LRF$mode <- "DRIVE_LRF"
+DRIVE_HVY <- as.vector(t(pa_omx$"/data/dmode9")) %>% as.data.frame()
+DRIVE_HVY <- cbind(DRIVE_HVY, dist_v)
+DRIVE_HVY$mode <- "DRIVE_HVY"
+Motor <- as.vector(t(pa_omx$"/data/motor")) %>% as.data.frame()
+Motor <- cbind(Motor, dist_v)
+Motor$mode <- "Motor"
+Nonmotorized <- as.vector(t(pa_omx$"/data/nonmotor")) %>% as.data.frame()
+Nonmotorized <- cbind(Nonmotorized, dist_v)
+Nonmotorized$mode <- "Nonmotorized"
+Transit <- as.vector(t(pa_omx$"/data/transit")) %>% as.data.frame()
+Transit <- cbind(Transit, dist_v)
+Transit$mode <- "Transit"
+WALK_COM <- as.vector(t(pa_omx$"/data/wCRT")) %>% as.data.frame()
+WALK_COM <- cbind(WALK_COM, dist_v)
+WALK_COM$mode <- "WALK_COM"
+WALK_EXP <- as.vector(t(pa_omx$"/data/wEXP")) %>% as.data.frame()
+WALK_EXP <- cbind(WALK_EXP, dist_v)
+WALK_EXP$mode <- "WALK_EXP"
+WALK_LOC <- as.vector(t(pa_omx$"/data/wLCL")) %>% as.data.frame()
+WALK_LOC <- cbind(WALK_LOC, dist_v)
+WALK_LOC$mode <- "WALK_LOC"
+WALK_LRF <- as.vector(t(pa_omx$"/data/wLRT")) %>% as.data.frame()
+WALK_LRF <- cbind(WALK_LRF, dist_v)
+WALK_LRF$mode <- "WALK_LRF"
+WALK_HVY <- as.vector(t(pa_omx$"/data/wmode9")) %>% as.data.frame()
+WALK_HVY <- cbind(WALK_HVY, dist_v)
+WALK_HVY$mode <- "WALK_HVY"
+## Combine into two dataframes, one with mode breakdowns and one with group summaries
+wfrc_all <- rbind(DRIVEALONEFREE, SHARED2FREE, SHARED3FREE, DRIVE_COM, DRIVE_EXP, 
+                   DRIVE_HVY, DRIVE_LOC, DRIVE_LRF, WALK_COM, WALK_EXP,  
+                   WALK_HVY, WALK_LOC, WALK_LRF)
+colnames(wfrc_all) <- c("count", "trip_length", "mode")
+wfrc_all <- wfrc_all %>%  mutate(
+    mode_group = case_when(
+      mode %in% auto ~ "Auto",
+      mode %in% nonmotor ~"Nonmotorized",
+      mode %in% transit_as ~ "Transit"
+    )
+  )
+
+wfrc_summary <- rbind(Transit, Nonmotorized, Auto)
+colnames(wfrc_summary) <- c("count", "trip_length", "mode")
+## Cleanup
+rm(DRIVEALONEFREE, SHARED2FREE, SHARED3FREE, DRIVE_COM, DRIVE_EXP, 
+                   DRIVE_HVY, DRIVE_LOC, DRIVE_LRF, WALK_COM, WALK_EXP,  
+                   WALK_HVY, WALK_LOC, WALK_LRF, Transit, Nonmotorized, Auto)
 ```
 
-```{r plots_galore}
+```{r plots_galore, echo=FALSE}
 ## Histogram
 as_trips <- as_trips%>% mutate(trip_length = distance)
 ggplot(as_trips) + geom_histogram(aes(x = trip_length), binwidth = .5) + xlim(0,20) + 
@@ -198,9 +248,62 @@ a_vs_t <- as_trips %>%
   filter(!mode_group == "Nonmotorized")
 ggplot(a_vs_t) + geom_density(aes(x = trip_length, color = mode_group)) + xlim(0,20) + 
 theme_bw(base_size = 18) + labs(y = "Frequency", x = "Trip Length", color = "Mode")
+as_transit <- a_vs_t %>% 
+  filter(mode_group == "Transit")
 ```
 
-```{r as_stats}
+```{r comparison, include=FALSE}
+## TLFD comparison graphics
+## By mode group
+ggplot(wfrc_summary) + geom_density(aes(x = trip_length, color = mode, weight = count)) +
+  xlim(0,20) + theme_bw(base_size = 18) + 
+  labs(y = "Frequency", x = "Trip Length", color = "Mode")
+
+wfrc_transit <- wfrc_summary %>% 
+  filter(mode == "Transit")
+ggplot(wfrc_transit) + geom_density(aes(x = trip_length, color = "WFRC", weight = count)) +
+  geom_density(data = as_transit, aes(x = trip_length, color = "ActivtySim")) + xlim(0,20) + theme_bw(base_size = 18) + 
+  labs(y = "Frequency", x = "Trip Length", color = "Model")
+
+m_index <- c("DRIVEALONEFREE", "SHARED2FREE", "SHARED3FREE", "DRIVE_COM", "DRIVE_EXP",
+             "DRIVE_HVY", "DRIVE_LOC", "DRIVE_LRF", "WALK_COM", "WALK_EXP", "WALK_HVY",
+             "WALK_LOC", "WALK_LRF")
+s_index <- c("Auto", "Transit", "Nonmotorized")
+```
+
+```{r plotter}
+plotter <- function(graph, limit){
+  if (graph %in% m_index){
+    as_temp <- as_trips %>% 
+      filter(trip_mode %in% graph) %>% 
+      select(trip_length, trip_mode)
+    wf_temp <- wfrc_all %>% 
+      filter(mode %in% graph)
+    pic <- ggplot(wf_temp) + 
+      geom_density(aes(x = trip_length, color = "WFRC", weight = count)) +
+      geom_density(data = as_temp, aes(x = trip_length, color = "ActivtySim")) + 
+      xlim(0,limit) + theme_bw(base_size = 18) + 
+      labs(y = "Frequency", x = "Trip Length", color = "Model", title = graph)
+    pic
+  } else if (graph %in% s_index){
+    as_temp <- as_trips %>% 
+      filter(mode_group %in% graph) %>% 
+      select(trip_length, mode_group)
+    wf_temp <- wfrc_summary %>% 
+      filter(mode %in% graph)
+    pic <- ggplot(wf_temp) + 
+      geom_density(aes(x = trip_length, color = "WFRC", weight = count)) +
+      geom_density(data = as_temp, aes(x = trip_length, color = "ActivtySim")) + 
+      xlim(0,limit) + theme_bw(base_size = 18) + 
+      labs(y = "Frequency", x = "Trip Length", color = "Model", title = graph)
+    pic
+  } else {
+    print("Try again")
+  }
+}
+```
+
+```{r as_stats, eval=FALSE, include=FALSE}
 ## Show all AS trip combinations
 combos <- group_by(as_trips, primary_purpose, purpose, trip_count) %>% tally() %>% print(n=100)
 
