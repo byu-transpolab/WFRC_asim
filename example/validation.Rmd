@@ -12,14 +12,15 @@ library(tidyverse)
 library(rhdf5)
 #devtools::install_github("cloudyr/rmote") # To easily see all plots
 library(rmote)
-#start_rmote() # run servr::daemon_stop(1) to stop
+start_rmote() # run servr::daemon_stop(1) to stop
 
 ## Read in output files
 wfrc_trips <- read_csv("validation/WFRC_trips.csv")
 wfrc_school <- read_csv("validation/WFRC_school.csv")
-as_trips <- read_csv("output/final_trips.csv")
-as_tours <- read_csv("output/final_tours.csv", col_types = list(
-  composition = col_character(), parent_tour_id = col_integer()))
+as_trips <- read_csv("output/final_trips.csv") %>% 
+  select(c(purpose, primary_purpose, destination, origin, trip_mode))
+#as_tours <- read_csv("output/final_tours.csv", col_types = list(
+  #composition = col_character(), parent_tour_id = col_integer()))
 
 ## Modes List
 auto <- c('DRIVEALONEFREE', "DRIVEALONETOLL", "SHARED2FREE", "SHARED2TOLL", 
@@ -223,7 +224,7 @@ ggplot(tlfd_a) + geom_density(aes(x = trip_length, color = trip_mode)) + xlim(0,
 tlfd_n <- as_trips %>% 
   filter(trip_mode %in% nonmotor_as) %>% 
   select(c(trip_mode, trip_length))
-ggplot(tlfd_n) + geom_density(aes(x = trip_length, color = trip_mode)) + xlim(0,20) + 
+ggplot(tlfd_n) + geom_density(aes(x = trip_length, color = trip_mode)) + xlim(0,8) + 
   theme_bw(base_size = 18) + labs(y = "Frequency", x = "Trip Length", color = "Mode")
 ## Transit modes
 tlfd_t <- as_trips %>% 
